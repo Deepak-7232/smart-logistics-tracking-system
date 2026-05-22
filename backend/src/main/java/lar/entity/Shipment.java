@@ -10,6 +10,10 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String driverAssigned;
+
+    private String vehicleAssigned;
+
     private String trackingId;
 
     private String senderName;
@@ -26,8 +30,8 @@ public class Shipment {
     }
 
     public Shipment(Long id, String trackingId, String senderName,
-                    String receiverName, String source,
-                    String destination, String status) {
+            String receiverName, String source,
+            String destination, String status) {
 
         this.id = id;
         this.trackingId = trackingId;
@@ -88,5 +92,21 @@ public class Shipment {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getDriverAssigned() {
+        return driverAssigned;
+    }
+
+    public void setDriverAssigned(String driverAssigned) {
+        this.driverAssigned = driverAssigned;
+    }
+
+    public String getVehicleAssigned() {
+        return vehicleAssigned;
+    }
+
+    public void setVehicleAssigned(String vehicleAssigned) {
+        this.vehicleAssigned = vehicleAssigned;
     }
 }

@@ -36,4 +36,20 @@ public class ShipmentController {
 
         return shipmentService.updateShipmentStatus(trackingId, status);
     }
+
+    @PutMapping("/assign-driver/{trackingId}")
+    public Shipment assignDriver(
+            @PathVariable String trackingId,
+            @RequestParam String driver) {
+
+        return shipmentService.assignDriver(trackingId, driver);
+    }
+
+    @PutMapping("/assign-vehicle/{trackingId}")
+    public Shipment assignVehicle(
+            @PathVariable String trackingId,
+            @RequestParam String vehicle) {
+
+        return shipmentService.assignVehicle(trackingId, vehicle);
+    }
 }

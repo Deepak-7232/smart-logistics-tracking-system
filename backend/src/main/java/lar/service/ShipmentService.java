@@ -36,4 +36,28 @@ public class ShipmentService {
 
         return null;
     }
+
+    public Shipment assignDriver(String trackingId, String driverName) {
+
+        Shipment shipment = shipmentRepository.findByTrackingId(trackingId);
+
+        if (shipment != null) {
+            shipment.setDriverAssigned(driverName);
+            return shipmentRepository.save(shipment);
+        }
+
+        return null;
+    }
+
+    public Shipment assignVehicle(String trackingId, String vehicleNumber) {
+
+        Shipment shipment = shipmentRepository.findByTrackingId(trackingId);
+
+        if (shipment != null) {
+            shipment.setVehicleAssigned(vehicleNumber);
+            return shipmentRepository.save(shipment);
+        }
+
+        return null;
+    }
 }
