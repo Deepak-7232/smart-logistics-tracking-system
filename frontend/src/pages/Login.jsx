@@ -1,18 +1,18 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
-import { MdLocalShipping, MdArrowForward } from "react-icons/md";
-import { MdEmail, MdLock } from "react-icons/md";
+import { MdLocalShipping, MdArrowForward, MdEmail, MdLock } from "react-icons/md";
 import authService from "../services/authService";
 import { useAuth } from "../context/AuthContext";
 import { loginSchema } from "../schemas/loginSchema";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
+import { ROLES } from "../constants/roles";
 
 export default function Login() {
-  const { login }  = useAuth();
-  const navigate   = useNavigate();
+  const { login, setProfile } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -23,15 +23,26 @@ export default function Login() {
   const onSubmit = async ({ email, password }) => {
     try {
       const data = await authService.login(email, password);
-      if (typeof data === "string" && data.toLowerCase().includes("invalid")) {
-        toast.error("Invalid email or password");
-      } else {
-        login(data);
-        toast.success("Welcome back!");
-        navigate("/dashboard");
+      login(data);
+
+      // Fetch full profile for DRIVER so we have id, name, vehicleAssigned etc.
+      if (data.role === ROLES.DRIVER) {
+        try {
+          const profile = await authService.getMyProfile(data.email);
+          setProfile(profile);
+        } catch {
+          // Non-critical — profile can be re-fetched on /my-vehicle page
+        }
       }
-    } catch {
-      toast.error("Could not connect to server. Is the backend running?");
+
+      toast.success(`Welcome back! Signed in as ${data.role}.`);
+      navigate("/dashboard");
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        toast.error("Invalid email or password. Please try again.");
+      } else {
+        toast.error("Could not connect to server. Is the backend running?");
+      }
     }
   };
 
@@ -61,38 +72,42 @@ export default function Login() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <Input
-              id="email"
-              type="email"
-              label="Email Address"
-              placeholder="admin@logistics.com"
-              icon={MdEmail}
-              error={errors.email?.message}
-              {...register("email")}
+              id="email" type="email" label="Email Address"
+              placeholder="admin@logistics.com" icon={MdEmail}
+              error={errors.email?.message} {...register("email")}
             />
             <Input
-              id="password"
-              type="password"
-              label="Password"
-              placeholder="••••••••"
-              icon={MdLock}
-              error={errors.password?.message}
-              {...register("password")}
+              id="password" type="password" label="Password"
+              placeholder="••••••••" icon={MdLock}
+              error={errors.password?.message} {...register("password")}
             />
-
-            <Button
-              type="submit"
-              loading={isSubmitting}
-              fullWidth
-              size="lg"
-              className="mt-2"
-            >
+            <Button type="submit" loading={isSubmitting} fullWidth size="lg" className="mt-2">
               Sign In <MdArrowForward />
             </Button>
           </form>
 
-          <p className="text-xs text-slate-600 text-center mt-6">
-            Default: any registered user in your MySQL database
+          {/* Register link */}
+          <p className="text-center text-sm text-slate-500 mt-5">
+            New driver?{" "}
+            <Link to="/register" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
+              Create an account
+            </Link>
           </p>
+
+          {/* Test accounts */}
+          <div className="mt-5 p-3 rounded-xl bg-slate-800/60 border border-slate-700/40">
+            <p className="text-[11px] text-slate-500 font-medium mb-2 uppercase tracking-wider">Test Accounts</p>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">deepak@gmail.com / 123456</span>
+                <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">ADMIN</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">user@gmail.com / 123456</span>
+                <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">DRIVER</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

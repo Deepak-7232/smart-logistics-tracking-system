@@ -3,6 +3,7 @@ import { MdSearch, MdWbSunny, MdNightlight } from "react-icons/md";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import NotificationCenter from "../components/NotificationCenter";
+import { ROLES } from "../constants/roles";
 
 const PAGE_TITLES = {
   "/dashboard": { title: "Dashboard",      sub: "Welcome back! Here's what's happening." },
@@ -13,10 +14,13 @@ const PAGE_TITLES = {
 };
 
 export default function Navbar() {
-  const { pathname } = useLocation();
-  const { user }     = useAuth();
+  const { pathname }       = useLocation();
+  const { user }           = useAuth();
   const { isDark, toggle } = useTheme();
-  const { title, sub } = PAGE_TITLES[pathname] ?? { title: "LogiTrack", sub: "" };
+  const { title, sub }     = PAGE_TITLES[pathname] ?? { title: "LogiTrack", sub: "" };
+
+  const isAdmin  = user?.role === ROLES.ADMIN;
+  const isDriver = user?.role === ROLES.DRIVER;
 
   return (
     <header className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80
@@ -53,15 +57,24 @@ export default function Navbar() {
         {/* Notification center */}
         <NotificationCenter />
 
-        {/* Avatar */}
+        {/* Avatar + role badge */}
         <div className="flex items-center gap-2 ml-1">
           {user?.role && (
-            <span className="text-[10px] font-bold tracking-wider text-primary-400 bg-primary-500/10 px-2 py-1 rounded border border-primary-500/20">
+            <span className={`text-[10px] font-bold tracking-wider px-2 py-1 rounded border
+              ${isAdmin
+                ? "text-indigo-400 bg-indigo-500/10 border-indigo-500/20"
+                : "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
+              }`}
+            >
               {user.role}
             </span>
           )}
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-violet-600
-                          flex items-center justify-center shadow-lg cursor-pointer">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg cursor-pointer
+            ${isAdmin
+              ? "bg-gradient-to-br from-primary-500 to-violet-600"
+              : "bg-gradient-to-br from-cyan-500 to-sky-600"
+            }`}
+          >
             <span className="text-xs font-bold text-white">
               {user?.email?.[0]?.toUpperCase() ?? "U"}
             </span>

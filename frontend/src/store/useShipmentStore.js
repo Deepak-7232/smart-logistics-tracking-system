@@ -18,6 +18,16 @@ const useShipmentStore = create((set, get) => ({
     }
   },
 
+  fetchMyShipments: async (email) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await shipmentService.getMyShipments(email);
+      set({ shipments: data, loading: false });
+    } catch (err) {
+      set({ error: "Failed to load shipments", loading: false });
+    }
+  },
+
   addShipment: async (formData) => {
     const data = await shipmentService.create(formData);
     set((s) => ({

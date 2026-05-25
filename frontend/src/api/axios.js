@@ -27,6 +27,9 @@ API.interceptors.response.use(
       toast.error("⚡ Server unreachable — check your backend is running.", {
         toastId: "network-error",   // deduplicate
       });
+    } else if (err.response.status === 400) {
+      // Business-logic errors from backend (e.g. driver unavailable)
+      // Don't toast here — let the caller handle with its own context-aware message
     } else if (err.response.status === 401) {
       // Token expired or invalid — clear session and redirect
       localStorage.removeItem("logi-auth");

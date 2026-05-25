@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
-import { MdAdd, MdRefresh, MdPeople, MdPhone, MdBadge, MdDelete } from "react-icons/md";
+import { MdAdd, MdRefresh, MdPeople, MdPhone, MdDelete, MdCheckCircle, MdCancel } from "react-icons/md";
 
 import MainLayout from "../layouts/MainLayout";
 import DataTable from "../components/DataTable";
@@ -73,6 +73,13 @@ export default function Drivers() {
           {getValue() || "—"}
         </span>
       ),
+    },
+    {
+      accessorKey: "available",
+      header: "Status",
+      cell: ({ getValue }) => getValue() 
+        ? <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 w-fit"><MdCheckCircle /> Available</span>
+        : <span className="flex items-center gap-1 text-red-400 text-xs font-bold bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20 w-fit"><MdCancel /> Unavailable</span>,
     },
     {
       accessorKey: "vehicleAssigned",

@@ -19,16 +19,24 @@ export function AuthProvider({ children }) {
       const payload = decodeJwt(token);
       if (!payload?.exp) return;
 
-      const timeLeft = (payload.exp * 1000) - Date.now();
+      const timeLeft = payload.exp * 1000 - Date.now();
+
+      // Auto-logout if token is expired
+      if (timeLeft <= 0) {
+        useAuthStore.getState().logout();
+        toast.info("Your session has expired. Please sign in again.");
+        window.location.href = "/";
+        return;
+      }
 
       // Warn if less than 5 minutes remain
-      if (timeLeft > 0 && timeLeft <= 5 * 60 * 1000 && !warningShownRef.current) {
-        toast.warn("Your session expires in less than 5 minutes. Please save your work.", {
+      if (timeLeft <= 5 * 60 * 1000 && !warningShownRef.current) {
+        toast.warn("⏱ Your session expires in less than 5 minutes. Please save your work.", {
           autoClose: 10000,
         });
         warningShownRef.current = true;
       }
-    }, 60000); // check every minute
+    }, 30000); // check every 30 seconds
 
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -46,4 +54,3 @@ export function useAuth() {
 }
 
 export { isTokenValid };
-

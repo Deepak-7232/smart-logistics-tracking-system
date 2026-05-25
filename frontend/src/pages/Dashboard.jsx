@@ -17,6 +17,8 @@ import { SkeletonCard, SkeletonTable } from "../components/ui/Skeleton";
 import useShipmentStore from "../store/useShipmentStore";
 import useDriverStore   from "../store/useDriverStore";
 import useVehicleStore  from "../store/useVehicleStore";
+import { useAuth }      from "../context/AuthContext";
+import { ROLES }        from "../constants/roles";
 
 /* ── Custom tooltip ── */
 function ChartTooltip({ active, payload, label }) {
@@ -34,17 +36,28 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 export default function Dashboard() {
-  const { shipments, loading: sLoading, fetchShipments } = useShipmentStore();
+  const { shipments, loading: sLoading, fetchShipments, fetchMyShipments } = useShipmentStore();
   const { drivers,   loading: dLoading, fetchDrivers }   = useDriverStore();
   const { vehicles,  loading: vLoading, fetchVehicles }  = useVehicleStore();
 
-  useEffect(() => {
-    fetchShipments();
-    fetchDrivers();
-    fetchVehicles();
-  }, []);
+  // ── RBAC ────────────────────────────────────────────────────────────────────
+  const { isAdmin, user } = useAuth();
+  const admin  = isAdmin();
+  const driver = user?.role === ROLES.DRIVER;
 
-  const loading = sLoading || dLoading || vLoading;
+  useEffect(() => {
+    if (admin) {
+      // ADMIN: fetch everything
+      fetchShipments();
+      fetchDrivers();
+      fetchVehicles();
+    } else {
+      // DRIVER: only fetch their own assigned shipments
+      if (user?.email) fetchMyShipments(user.email);
+    }
+  }, [admin, user]);
+
+  const loading = sLoading || (admin && (dLoading || vLoading));
 
   /* ── Computed stats ── */
   const delivered       = shipments.filter(s => s.status?.toUpperCase() === "DELIVERED").length;
@@ -52,7 +65,8 @@ export default function Dashboard() {
   const pending         = shipments.filter(s => s.status?.toUpperCase() === "PENDING").length;
   const outForDelivery  = shipments.filter(s => s.status?.toUpperCase() === "OUT_FOR_DELIVERY").length;
 
-  const stats = [
+  // Admin sees all 6 cards, USER sees 4 shipment-only cards
+  const adminStats = [
     { title: "Total Shipments", value: shipments.length, icon: MdLocalShipping, color: "indigo",  trend: 12, trendLabel: "vs last month" },
     { title: "Active Drivers",  value: drivers.length,   icon: MdPeople,        color: "violet",  trend: 5,  trendLabel: "added this week" },
     { title: "Fleet Vehicles",  value: vehicles.length,  icon: MdDirectionsCar, color: "cyan",    trend: 2,  trendLabel: "new vehicles" },
@@ -60,6 +74,15 @@ export default function Dashboard() {
     { title: "In Transit",      value: inTransit,         icon: MdTrendingUp,    color: "amber",   trend: -3, trendLabel: "vs yesterday" },
     { title: "Pending",         value: pending,           icon: MdSchedule,      color: "rose",    trend: 0,  trendLabel: "awaiting pickup" },
   ];
+
+  const userStats = [
+    { title: "Total Shipments", value: shipments.length, icon: MdLocalShipping, color: "indigo",  trend: 12, trendLabel: "vs last month" },
+    { title: "Delivered",       value: delivered,         icon: MdCheckCircle,   color: "emerald", trend: 18, trendLabel: "completion rate" },
+    { title: "In Transit",      value: inTransit,         icon: MdTrendingUp,    color: "amber",   trend: -3, trendLabel: "vs yesterday" },
+    { title: "Pending",         value: pending,           icon: MdSchedule,      color: "rose",    trend: 0,  trendLabel: "awaiting pickup" },
+  ];
+
+  const stats = admin ? adminStats : userStats;
 
   /* ── Chart data ── */
   const PIE_DATA = [
@@ -95,10 +118,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      {/* Stat Cards — count differs by role */}
+      <div className={`grid ${admin ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4"} gap-4 mb-8`}>
         {loading
-          ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+          ? Array.from({ length: stats.length }).map((_, i) => <SkeletonCard key={i} />)
           : stats.map((s) => <StatCard key={s.title} {...s} />)
         }
       </div>
@@ -159,37 +182,39 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Fleet Utilization — Radial */}
+      {/* Fleet Utilization — only shown to ADMIN (has vehicle data) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-        <div className="glass-card p-5">
-          <h2 className="text-sm font-semibold text-slate-200 mb-4">Fleet Utilization</h2>
-          {loading || vehicles.length === 0 ? (
-            <div className="flex items-center justify-center h-40 text-slate-600 text-xs">
-              {loading ? "Loading…" : "No vehicles yet"}
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={160}>
-              <RadialBarChart
-                innerRadius="30%"
-                outerRadius="90%"
-                data={RADIAL_DATA}
-                startAngle={180}
-                endAngle={0}
-              >
-                <RadialBar minAngle={15} dataKey="value" cornerRadius={6} />
-                <Tooltip content={<ChartTooltip />} />
-                <Legend
-                  formatter={(value) => <span className="text-[11px] text-slate-400">{value}</span>}
-                  iconSize={8}
-                  iconType="circle"
-                />
-              </RadialBarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        {admin && (
+          <div className="glass-card p-5">
+            <h2 className="text-sm font-semibold text-slate-200 mb-4">Fleet Utilization</h2>
+            {loading || vehicles.length === 0 ? (
+              <div className="flex items-center justify-center h-40 text-slate-600 text-xs">
+                {loading ? "Loading…" : "No vehicles yet"}
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={160}>
+                <RadialBarChart
+                  innerRadius="30%"
+                  outerRadius="90%"
+                  data={RADIAL_DATA}
+                  startAngle={180}
+                  endAngle={0}
+                >
+                  <RadialBar minAngle={15} dataKey="value" cornerRadius={6} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Legend
+                    formatter={(value) => <span className="text-[11px] text-slate-400">{value}</span>}
+                    iconSize={8}
+                    iconType="circle"
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        )}
 
         {/* Recent Shipments Table */}
-        <div className="glass-card p-5 col-span-1 lg:col-span-2">
+        <div className={`glass-card p-5 ${admin ? "col-span-1 lg:col-span-2" : "col-span-1 lg:col-span-3"}`}>
           <h2 className="text-sm font-semibold text-slate-200 mb-4">Recent Shipments</h2>
           {sLoading ? (
             <SkeletonTable rows={5} cols={4} />

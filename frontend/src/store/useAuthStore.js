@@ -1,52 +1,62 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ROLES } from "../constants/roles";
 
-/** Safely decode a JWT payload without verifying signature */
 function decodeJwt(token) {
-  try {
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(atob(token.split(".")[1])); } catch { return null; }
 }
-
-/** Returns true if JWT exp claim is in the future */
 function isTokenValid(token) {
   if (!token) return false;
-  const payload = decodeJwt(token);
-  if (!payload?.exp) return false;
-  return payload.exp * 1000 > Date.now();
+  const p = decodeJwt(token);
+  return p?.exp ? p.exp * 1000 > Date.now() : false;
 }
 
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      token: null,
-      user:  null,   // { email, role }
+      token:  null,
+      user:   null,   // { email, role, name?, id?, phone?, licenseNumber?, vehicleAssigned?, available? }
       isAuth: false,
 
-      /** Call after receiving JWT from server */
-      login: (jwt) => {
-        const payload = decodeJwt(jwt);
-        set({
-          token:  jwt,
-          user:   { email: payload?.sub ?? "", role: payload?.role ?? "ADMIN" },
-          isAuth: true,
-        });
+      /** Accepts { token, email, role } from backend AuthResponse */
+      login: (data) => {
+        let token, email, role;
+        if (typeof data === "string") {
+          token = data;
+          const p = decodeJwt(data);
+          email = p?.sub ?? "";
+          role  = p?.role ?? null;
+        } else {
+          token = data.token;
+          email = data.email;
+          role  = data.role;
+        }
+        set({ token, user: { email, role }, isAuth: true });
+      },
+
+      /** Called after fetching /drivers/me — stores full driver profile */
+      setProfile: (profile) => {
+        set((s) => ({
+          user: { ...s.user, ...profile },
+        }));
       },
 
       logout: () => set({ token: null, user: null, isAuth: false }),
 
-      /** Run on app boot — evict expired tokens */
       restoreSession: () => {
         const { token } = get();
         if (token && !isTokenValid(token)) {
           set({ token: null, user: null, isAuth: false });
         }
       },
+
+      // ── RBAC helpers ──────────────────────────────────────────────────────
+      isAdmin:  () => get().user?.role === ROLES.ADMIN,
+      isDriver: () => get().user?.role === ROLES.DRIVER,
+      hasRole:  (roles = []) => roles.includes(get().user?.role),
     }),
     {
-      name: "logi-auth",          // localStorage key
+      name: "logi-auth",
       partialize: (s) => ({ token: s.token, user: s.user, isAuth: s.isAuth }),
     }
   )

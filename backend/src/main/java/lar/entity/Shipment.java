@@ -10,7 +10,13 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String driverAssigned;
+    /**
+     * Replaces the old String driverAssigned field.
+     * Now a proper FK relationship: shipments.driver_id → drivers.id
+     */
+    @ManyToOne
+    @JoinColumn(name = "driver_id")
+    private Driver driver;
 
     private String vehicleAssigned;
 
@@ -26,87 +32,31 @@ public class Shipment {
 
     private String status;
 
-    public Shipment() {
-    }
+    public Shipment() {}
 
-    public Shipment(Long id, String trackingId, String senderName,
-            String receiverName, String source,
-            String destination, String status) {
+    public Long getId() { return id; }
 
-        this.id = id;
-        this.trackingId = trackingId;
-        this.senderName = senderName;
-        this.receiverName = receiverName;
-        this.source = source;
-        this.destination = destination;
-        this.status = status;
-    }
+    public Driver getDriver() { return driver; }
+    public void setDriver(Driver driver) { this.driver = driver; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getVehicleAssigned() { return vehicleAssigned; }
+    public void setVehicleAssigned(String vehicleAssigned) { this.vehicleAssigned = vehicleAssigned; }
 
-    public String getTrackingId() {
-        return trackingId;
-    }
+    public String getTrackingId() { return trackingId; }
+    public void setTrackingId(String trackingId) { this.trackingId = trackingId; }
 
-    public void setTrackingId(String trackingId) {
-        this.trackingId = trackingId;
-    }
+    public String getSenderName() { return senderName; }
+    public void setSenderName(String senderName) { this.senderName = senderName; }
 
-    public String getSenderName() {
-        return senderName;
-    }
+    public String getReceiverName() { return receiverName; }
+    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
 
-    public void setSenderName(String senderName) {
-        this.senderName = senderName;
-    }
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
 
-    public String getReceiverName() {
-        return receiverName;
-    }
+    public String getDestination() { return destination; }
+    public void setDestination(String destination) { this.destination = destination; }
 
-    public void setReceiverName(String receiverName) {
-        this.receiverName = receiverName;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public String getDestination() {
-        return destination;
-    }
-
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getDriverAssigned() {
-        return driverAssigned;
-    }
-
-    public void setDriverAssigned(String driverAssigned) {
-        this.driverAssigned = driverAssigned;
-    }
-
-    public String getVehicleAssigned() {
-        return vehicleAssigned;
-    }
-
-    public void setVehicleAssigned(String vehicleAssigned) {
-        this.vehicleAssigned = vehicleAssigned;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

@@ -20,4 +20,8 @@ public class DriverService {
     public List<Driver> getAllDrivers() {
         return driverRepository.findAll();
     }
+
+    public void deleteDriver(Long id) {
+        driverRepository.deleteById(id);
+    }
 }
