@@ -19,7 +19,7 @@ async function testUpdate() {
       headers: { Authorization: `Bearer ${token}` }
     });
     console.log(`Shipments:`, JSON.stringify(shipRes.data, null, 2));
-    
+
     const trackingId = "TRA27003";
     // Find Sohil's ID
     const driverId = drivers.find(d => d.name.includes("Sohil"))?.id;

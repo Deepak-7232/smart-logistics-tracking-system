@@ -43,35 +43,31 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background glows */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-600/8 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-600/8 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+      <div className="w-full max-w-sm animate-fade-in">
 
-      <div className="w-full max-w-md z-10 animate-fade-in">
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600
-                          items-center justify-center shadow-xl shadow-cyan-900/40 mb-4">
-            <MdLocalShipping className="text-3xl text-white" />
+          <div className="inline-flex w-10 h-10 rounded-lg bg-primary-500 items-center justify-center mb-4">
+            <MdLocalShipping className="text-white text-lg" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Join LogiTrack</h1>
-          <p className="text-sm text-slate-400 mt-1">Create your driver account</p>
+          <h1 className="text-xl font-semibold text-gray-100">Join LogiTrack</h1>
+          <p className="text-xs text-gray-600 mt-1">Create your driver account</p>
         </div>
 
         {/* Card */}
-        <div className="glass-card p-8 bg-slate-900/80 border border-slate-700/60">
-          {/* DRIVER badge */}
-          <div className="flex items-center gap-2 mb-6">
-            <span className="text-[11px] font-bold tracking-wider px-2.5 py-1 rounded-lg
-                             text-cyan-400 bg-cyan-500/10 border border-cyan-500/20">
-              DRIVER REGISTRATION
+        <div className="card p-6 shadow-lg">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-100">Driver Registration</h2>
+              <p className="text-xs text-gray-600 mt-0.5">Fill in your details below</p>
+            </div>
+            <span className="text-[10px] font-medium text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+              DRIVER
             </span>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5" noValidate>
             <Input
               id="name" label="Full Name *" placeholder="Rahul Kumar"
               icon={MdPerson} error={errors.name?.message} {...register("name")}
@@ -96,14 +92,14 @@ export default function Register() {
               {...register("licenseNumber")}
             />
 
-            <Button type="submit" loading={isSubmitting} fullWidth size="lg" className="mt-2">
-              Create Account <MdArrowForward />
+            <Button type="submit" loading={isSubmitting} fullWidth className="mt-1">
+              Create Account <MdArrowForward className="text-sm" />
             </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-500 mt-5">
+          <p className="text-center text-xs text-gray-600 mt-4">
             Already have an account?{" "}
-            <Link to="/" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
+            <Link to="/" className="text-primary-400 hover:text-primary-300 transition-colors">
               Sign in
             </Link>
           </p>

@@ -1,11 +1,8 @@
 import { forwardRef } from "react";
+import { clsx } from "clsx";
 
-/**
- * Controlled Input for use with React Hook Form.
- * Pass `error` to show an inline error message.
- */
 const Input = forwardRef(function Input(
-  { label, error, id, icon: Icon, className = "", ...props },
+  { label, id, error, icon: Icon, className = "", ...props },
   ref
 ) {
   return (
@@ -17,22 +14,24 @@ const Input = forwardRef(function Input(
       )}
       <div className="relative">
         {Icon && (
-          <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-lg pointer-events-none" />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none">
+            <Icon className="text-base" />
+          </span>
         )}
         <input
           ref={ref}
           id={id}
-          className={`form-input ${Icon ? "pl-10" : ""} ${
-            error ? "border-red-500/60 focus:ring-red-500/40 focus:border-red-500" : ""
-          } ${className}`}
+          className={clsx(
+            "form-input",
+            Icon && "pl-9",
+            error && "border-red-500/50 focus:ring-red-500/30 focus:border-red-500/60",
+            className
+          )}
           {...props}
         />
       </div>
       {error && (
-        <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
-          <span className="inline-block w-1 h-1 rounded-full bg-red-400 flex-shrink-0" />
-          {error}
-        </p>
+        <p className="mt-1 text-[11px] text-red-400">{error}</p>
       )}
     </div>
   );

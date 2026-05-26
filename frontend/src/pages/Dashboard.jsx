@@ -4,9 +4,8 @@ import {
   MdCheckCircle, MdTrendingUp, MdSchedule,
 } from "react-icons/md";
 import {
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  RadialBarChart, RadialBar,
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
 } from "recharts";
 
 import MainLayout from "../layouts/MainLayout";
@@ -20,15 +19,15 @@ import useVehicleStore  from "../store/useVehicleStore";
 import { useAuth }      from "../context/AuthContext";
 import { ROLES }        from "../constants/roles";
 
-/* ── Custom tooltip ── */
+/* ── Clean minimal tooltip ── */
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs shadow-xl">
-      {label && <p className="text-slate-400 mb-1 font-medium">{label}</p>}
+    <div className="bg-app-surface border border-app-border rounded-lg px-3 py-2 text-xs shadow-lg">
+      {label && <p className="text-gray-500 mb-1">{label}</p>}
       {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color ?? p.fill }}>
-          {p.name}: <span className="font-semibold">{p.value}</span>
+        <p key={p.name} className="font-medium" style={{ color: p.color ?? p.fill }}>
+          {p.name}: {p.value}
         </p>
       ))}
     </div>
@@ -40,19 +39,15 @@ export default function Dashboard() {
   const { drivers,   loading: dLoading, fetchDrivers }   = useDriverStore();
   const { vehicles,  loading: vLoading, fetchVehicles }  = useVehicleStore();
 
-  // ── RBAC ────────────────────────────────────────────────────────────────────
   const { isAdmin, user } = useAuth();
   const admin  = isAdmin();
-  const driver = user?.role === ROLES.DRIVER;
 
   useEffect(() => {
     if (admin) {
-      // ADMIN: fetch everything
       fetchShipments();
       fetchDrivers();
       fetchVehicles();
     } else {
-      // DRIVER: only fetch their own assigned shipments
       if (user?.email) fetchMyShipments(user.email);
     }
   }, [admin, user]);
@@ -60,12 +55,11 @@ export default function Dashboard() {
   const loading = sLoading || (admin && (dLoading || vLoading));
 
   /* ── Computed stats ── */
-  const delivered       = shipments.filter(s => s.status?.toUpperCase() === "DELIVERED").length;
-  const inTransit       = shipments.filter(s => s.status?.toUpperCase() === "IN_TRANSIT").length;
-  const pending         = shipments.filter(s => s.status?.toUpperCase() === "PENDING").length;
-  const outForDelivery  = shipments.filter(s => s.status?.toUpperCase() === "OUT_FOR_DELIVERY").length;
+  const delivered      = shipments.filter(s => s.status?.toUpperCase() === "DELIVERED").length;
+  const inTransit      = shipments.filter(s => s.status?.toUpperCase() === "IN_TRANSIT").length;
+  const pending        = shipments.filter(s => s.status?.toUpperCase() === "PENDING").length;
+  const outForDelivery = shipments.filter(s => s.status?.toUpperCase() === "OUT_FOR_DELIVERY").length;
 
-  // Admin sees all 6 cards, USER sees 4 shipment-only cards
   const adminStats = [
     { title: "Total Shipments", value: shipments.length, icon: MdLocalShipping, color: "indigo",  trend: 12, trendLabel: "vs last month" },
     { title: "Active Drivers",  value: drivers.length,   icon: MdPeople,        color: "violet",  trend: 5,  trendLabel: "added this week" },
@@ -84,56 +78,57 @@ export default function Dashboard() {
 
   const stats = admin ? adminStats : userStats;
 
-  /* ── Chart data ── */
+  /* ── Chart data — semantic muted colors ── */
   const PIE_DATA = [
-    { name: "Delivered",       value: delivered,      fill: "#10b981" },
-    { name: "In Transit",      value: inTransit,      fill: "#6366f1" },
-    { name: "Pending",         value: pending,        fill: "#f59e0b" },
-    { name: "Out for Delivery",value: outForDelivery, fill: "#8b5cf6" },
+    { name: "Delivered",        value: delivered,      fill: "#10b981" },
+    { name: "In Transit",       value: inTransit,      fill: "#6366f1" },
+    { name: "Pending",          value: pending,        fill: "#f59e0b" },
+    { name: "Out for Delivery", value: outForDelivery, fill: "#8b5cf6" },
   ].filter(d => d.value > 0);
 
   const BAR_DATA = [
-    { name: "Pending",    count: pending },
-    { name: "In Transit", count: inTransit },
-    { name: "Out",        count: outForDelivery },
-    { name: "Delivered",  count: delivered },
+    { name: "Pending",    count: pending,        fill: "#f59e0b" },
+    { name: "In Transit", count: inTransit,      fill: "#6366f1" },
+    { name: "Out",        count: outForDelivery, fill: "#8b5cf6" },
+    { name: "Delivered",  count: delivered,      fill: "#10b981" },
   ];
 
+  // Fleet summary for admin
   const available   = vehicles.filter(v => v.status?.toUpperCase() === "AVAILABLE").length;
   const inUse       = vehicles.filter(v => v.status?.toUpperCase() === "IN_USE").length;
   const maintenance = vehicles.filter(v => v.status?.toUpperCase() === "MAINTENANCE").length;
-  const RADIAL_DATA = [
-    { name: "Available",   value: available,   fill: "#06b6d4" },
-    { name: "In Use",      value: inUse,       fill: "#f59e0b" },
-    { name: "Maintenance", value: maintenance, fill: "#f43f5e" },
-  ];
 
   return (
     <MainLayout>
-      <div className="page-header flex items-center gap-3">
-        <div className="w-2 h-8 bg-gradient-to-b from-primary-500 to-violet-600 rounded-full" />
-        <div>
-          <h1 className="text-2xl font-bold text-slate-100">Overview</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Real-time logistics dashboard</p>
-        </div>
+      {/* ── Page header ── */}
+      <div className="page-header">
+        <h1>Overview</h1>
+        <p>
+          {admin
+            ? `${shipments.length} shipments · ${drivers.length} drivers · ${vehicles.length} vehicles`
+            : `${shipments.length} assigned shipment${shipments.length !== 1 ? "s" : ""}`
+          }
+        </p>
       </div>
 
-      {/* Stat Cards — count differs by role */}
-      <div className={`grid ${admin ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4"} gap-4 mb-8`}>
+      {/* ── Stat cards ── */}
+      <div className={`grid gap-3 mb-6 ${admin ? "grid-cols-2 lg:grid-cols-3" : "grid-cols-2 lg:grid-cols-4"}`}>
         {loading
           ? Array.from({ length: stats.length }).map((_, i) => <SkeletonCard key={i} />)
           : stats.map((s) => <StatCard key={s.title} {...s} />)
         }
       </div>
 
-      {/* ── Charts Row ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      {/* ── Charts row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
-        {/* Shipment Status Distribution — Donut */}
-        <div className="glass-card p-5 col-span-1">
-          <h2 className="text-sm font-semibold text-slate-200 mb-4">Shipment Status</h2>
+        {/* Donut — Shipment Status */}
+        <div className="card p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+            Status Distribution
+          </p>
           {loading || PIE_DATA.length === 0 ? (
-            <div className="flex items-center justify-center h-48 text-slate-600 text-xs">
+            <div className="flex items-center justify-center h-48 text-gray-700 text-xs">
               {loading ? "Loading…" : "No data yet"}
             </div>
           ) : (
@@ -141,11 +136,9 @@ export default function Dashboard() {
               <PieChart>
                 <Pie
                   data={PIE_DATA}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={80}
-                  paddingAngle={3}
+                  cx="50%" cy="50%"
+                  innerRadius={52} outerRadius={75}
+                  paddingAngle={2}
                   dataKey="value"
                 >
                   {PIE_DATA.map((entry, i) => (
@@ -154,8 +147,8 @@ export default function Dashboard() {
                 </Pie>
                 <Tooltip content={<ChartTooltip />} />
                 <Legend
-                  formatter={(value) => <span className="text-[11px] text-slate-400">{value}</span>}
-                  iconSize={8}
+                  formatter={(value) => <span className="text-[11px] text-gray-500">{value}</span>}
+                  iconSize={6}
                   iconType="circle"
                 />
               </PieChart>
@@ -163,18 +156,29 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Shipment Breakdown — Bar */}
-        <div className="glass-card p-5 col-span-1 lg:col-span-2">
-          <h2 className="text-sm font-semibold text-slate-200 mb-4">Shipment Breakdown</h2>
+        {/* Bar — Shipment Breakdown */}
+        <div className="card p-5 col-span-1 lg:col-span-2">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+            Shipment Breakdown
+          </p>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={BAR_DATA} barCategoryGap="35%">
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(99,102,241,0.06)" }} />
-              <Bar dataKey="count" name="Shipments" radius={[6, 6, 0, 0]}>
-                {BAR_DATA.map((_, i) => (
-                  <Cell key={i} fill={["#f59e0b","#6366f1","#8b5cf6","#10b981"][i]} />
+            <BarChart data={BAR_DATA} barCategoryGap="40%" barGap={4}>
+              <CartesianGrid strokeDasharray="2 2" stroke="#1F2937" vertical={false} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: "#4B5563", fontSize: 11 }}
+                axisLine={false} tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: "#4B5563", fontSize: 11 }}
+                axisLine={false} tickLine={false}
+                allowDecimals={false}
+                width={28}
+              />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+              <Bar dataKey="count" name="Shipments" radius={[3, 3, 0, 0]}>
+                {BAR_DATA.map((entry, i) => (
+                  <Cell key={i} fill={entry.fill} fillOpacity={0.85} />
                 ))}
               </Bar>
             </BarChart>
@@ -182,74 +186,90 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Fleet Utilization — only shown to ADMIN (has vehicle data) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      {/* ── Bottom row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Fleet summary — Admin only */}
         {admin && (
-          <div className="glass-card p-5">
-            <h2 className="text-sm font-semibold text-slate-200 mb-4">Fleet Utilization</h2>
-            {loading || vehicles.length === 0 ? (
-              <div className="flex items-center justify-center h-40 text-slate-600 text-xs">
-                {loading ? "Loading…" : "No vehicles yet"}
+          <div className="card p-5">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+              Fleet Status
+            </p>
+            {loading ? (
+              <div className="space-y-2">
+                {[1,2,3].map(i => <div key={i} className="skeleton h-10 rounded" />)}
+              </div>
+            ) : vehicles.length === 0 ? (
+              <div className="empty-state py-8">
+                <div className="empty-state-icon"><MdDirectionsCar /></div>
+                <h3>No vehicles</h3>
+                <p>Add vehicles from the fleet page</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={160}>
-                <RadialBarChart
-                  innerRadius="30%"
-                  outerRadius="90%"
-                  data={RADIAL_DATA}
-                  startAngle={180}
-                  endAngle={0}
-                >
-                  <RadialBar minAngle={15} dataKey="value" cornerRadius={6} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Legend
-                    formatter={(value) => <span className="text-[11px] text-slate-400">{value}</span>}
-                    iconSize={8}
-                    iconType="circle"
-                  />
-                </RadialBarChart>
-              </ResponsiveContainer>
+              <div className="space-y-3">
+                {[
+                  { label: "Available",   count: available,   color: "text-emerald-400", bar: "bg-emerald-500" },
+                  { label: "In Use",      count: inUse,       color: "text-amber-400",   bar: "bg-amber-500" },
+                  { label: "Maintenance", count: maintenance, color: "text-red-400",      bar: "bg-red-500" },
+                ].map(({ label, count, color, bar }) => (
+                  <div key={label}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-500">{label}</span>
+                      <span className={`text-xs font-semibold ${color}`}>{count}</span>
+                    </div>
+                    <div className="h-1.5 bg-app-elevated rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${bar} rounded-full`}
+                        style={{ width: vehicles.length > 0 ? `${(count / vehicles.length) * 100}%` : "0%" }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <p className="text-[10px] text-gray-700 mt-2">{vehicles.length} total vehicles</p>
+              </div>
             )}
           </div>
         )}
 
-        {/* Recent Shipments Table */}
-        <div className={`glass-card p-5 ${admin ? "col-span-1 lg:col-span-2" : "col-span-1 lg:col-span-3"}`}>
-          <h2 className="text-sm font-semibold text-slate-200 mb-4">Recent Shipments</h2>
+        {/* Recent Shipments */}
+        <div className={`card overflow-hidden ${admin ? "col-span-1 lg:col-span-2" : "col-span-1 lg:col-span-3"}`}>
+          <div className="px-5 py-4 border-b border-app-border">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Recent Shipments</p>
+          </div>
           {sLoading ? (
             <SkeletonTable rows={5} cols={4} />
+          ) : shipments.length === 0 ? (
+            <div className="empty-state py-12">
+              <div className="empty-state-icon"><MdLocalShipping /></div>
+              <h3>No shipments yet</h3>
+              <p>Shipments will appear here once created</p>
+            </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl">
+            <div className="overflow-x-auto">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Tracking ID</th><th>Sender</th><th>Route</th><th>Status</th>
+                    <th>Tracking ID</th>
+                    <th>Sender</th>
+                    <th>Route</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {shipments.slice(0, 8).map((s) => (
                     <tr key={s.id}>
                       <td>
-                        <span className="font-mono text-xs bg-slate-800 text-primary-400 px-2 py-0.5 rounded">
-                          {s.trackingId}
-                        </span>
+                        <span className="tracking-pill">{s.trackingId}</span>
                       </td>
-                      <td>{s.senderName}</td>
+                      <td className="text-gray-300">{s.senderName}</td>
                       <td>
-                        <span className="text-slate-400">{s.source}</span>
-                        <span className="text-slate-700 mx-1">→</span>
-                        {s.destination}
+                        <span className="text-gray-500">{s.source}</span>
+                        <span className="text-gray-700 mx-1.5">→</span>
+                        <span className="text-gray-300">{s.destination}</span>
                       </td>
                       <td><Badge status={s.status} /></td>
                     </tr>
                   ))}
-                  {shipments.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="text-center py-8 text-slate-600 italic text-sm">
-                        No shipments yet
-                      </td>
-                    </tr>
-                  )}
                 </tbody>
               </table>
             </div>

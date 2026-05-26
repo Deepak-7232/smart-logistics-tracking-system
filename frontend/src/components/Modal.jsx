@@ -4,7 +4,9 @@ import { MdClose } from "react-icons/md";
 export default function Modal({ isOpen, onClose, title, children, size = "md", disableClose = false }) {
   // Close on Escape
   useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape" && !disableClose) onClose(); };
+    const handler = (e) => {
+      if (e.key === "Escape" && !disableClose) onClose();
+    };
     if (isOpen) window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, onClose, disableClose]);
@@ -15,31 +17,36 @@ export default function Modal({ isOpen, onClose, title, children, size = "md", d
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 animate-fade-in"
       onClick={(e) => { if (e.target === e.currentTarget && !disableClose) onClose(); }}
     >
-      <div className={`relative glass-card bg-slate-900 border border-slate-700/80 w-full ${widths[size]} shadow-2xl animate-fade-in overflow-hidden`}>
+      <div
+        className={`relative bg-app-surface border border-app-border rounded-xl w-full ${widths[size]} shadow-modal animate-fade-in`}
+      >
+        {/* Loading overlay */}
         {disableClose && (
-          <div className="absolute inset-0 bg-slate-950/20 backdrop-blur-[1px] z-10 pointer-events-auto" />
+          <div className="absolute inset-0 bg-app-surface/60 z-10 rounded-xl pointer-events-auto" />
         )}
-        
+
         {/* Header */}
-        <div className="relative z-20 flex items-center justify-between px-6 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-slate-100">{title}</h2>
+        <div className="relative z-20 flex items-center justify-between px-5 py-4 border-b border-app-border">
+          <h2 className="text-sm font-semibold text-gray-100">{title}</h2>
           <button
             onClick={() => { if (!disableClose) onClose(); }}
             disabled={disableClose}
-            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200
-                       ${disableClose ? "text-slate-600 cursor-not-allowed" : "text-slate-400 hover:text-slate-100 hover:bg-slate-800"}`}
+            className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors duration-150
+                       ${disableClose
+                         ? "text-gray-700 cursor-not-allowed"
+                         : "text-gray-500 hover:text-gray-200 hover:bg-app-elevated"
+                       }`}
           >
-            <MdClose className="text-xl" />
+            <MdClose className="text-base" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="relative z-20 px-6 py-5">{children}</div>
+        <div className="relative z-20 px-5 py-5">{children}</div>
       </div>
     </div>
   );
 }
-

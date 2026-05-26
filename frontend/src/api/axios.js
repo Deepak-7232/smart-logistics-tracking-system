@@ -6,7 +6,6 @@ const API = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-/* ── Request: attach JWT from Zustand persisted store ── */
 API.interceptors.request.use((req) => {
   try {
     const raw = localStorage.getItem("logi-auth");
@@ -18,20 +17,15 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-/* ── Response: handle errors globally ── */
 API.interceptors.response.use(
   (res) => res,
   (err) => {
     if (!err.response) {
-      // Network / backend offline
-      toast.error("⚡ Server unreachable — check your backend is running.", {
-        toastId: "network-error",   // deduplicate
+      toast.error(" Server unreachable — check your backend is running.", {
+        toastId: "network-error",   
       });
     } else if (err.response.status === 400) {
-      // Business-logic errors from backend (e.g. driver unavailable)
-      // Don't toast here — let the caller handle with its own context-aware message
     } else if (err.response.status === 401) {
-      // Token expired or invalid — clear session and redirect
       localStorage.removeItem("logi-auth");
       toast.info("Session expired. Please sign in again.");
       setTimeout(() => { window.location.href = "/"; }, 1500);

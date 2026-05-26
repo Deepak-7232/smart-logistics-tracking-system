@@ -18,7 +18,7 @@ import { vehicleSchema, VEHICLE_TYPES, VEHICLE_STATUSES } from "../schemas/vehic
 
 export default function Vehicles() {
   const { vehicles, loading, fetchVehicles, addVehicle, deleteVehicle } = useVehicleStore();
-  const { drivers, fetchDrivers }                        = useDriverStore();
+  const { drivers, fetchDrivers }                                        = useDriverStore();
   const [open, setOpen] = useState(false);
 
   useEffect(() => { fetchVehicles(); fetchDrivers(); }, []);
@@ -44,38 +44,39 @@ export default function Vehicles() {
     }
   };
 
-  /* ---- TanStack columns ---- */
+  /* ── Columns ── */
   const columns = useMemo(() => [
     {
       id: "vehicle",
       header: "Vehicle",
       accessorKey: "vehicleNumber",
       cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center text-lg flex-shrink-0">
-            <MdDirectionsCar />
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded bg-app-elevated border border-app-border
+                          flex items-center justify-center flex-shrink-0">
+            <MdDirectionsCar className="text-gray-600 text-sm" />
           </div>
           <div>
-            <p className="font-mono font-semibold text-slate-200 text-sm">{row.original.vehicleNumber}</p>
-            <p className="text-xs text-slate-500">{row.original.vehicleType}</p>
+            <p className="font-mono text-sm font-semibold text-gray-200">{row.original.vehicleNumber}</p>
+            <p className="text-[11px] text-gray-600">{row.original.vehicleType}</p>
           </div>
         </div>
       ),
     },
-    { accessorKey: "capacity",       header: "Capacity" },
+    { accessorKey: "capacity", header: "Capacity", cell: ({ getValue }) => <span className="text-xs text-gray-400">{getValue() || "—"}</span> },
     {
       accessorKey: "driverAssigned",
       header: "Driver",
       cell: ({ getValue }) => getValue()
-        ? <span className="text-violet-400">{getValue()}</span>
-        : <span className="text-slate-600 italic text-xs">Unassigned</span>,
+        ? <span className="text-xs text-gray-300">{getValue()}</span>
+        : <span className="text-gray-700 text-xs italic">Unassigned</span>,
     },
     {
       accessorKey: "currentLocation",
       header: "Location",
       cell: ({ getValue }) => (
-        <span className="flex items-center gap-1 text-slate-300">
-          <MdLocationOn className="text-slate-500 flex-shrink-0" /> {getValue() ?? "—"}
+        <span className="flex items-center gap-1 text-xs text-gray-400">
+          <MdLocationOn className="text-gray-700 flex-shrink-0" /> {getValue() ?? "—"}
         </span>
       ),
     },
@@ -91,16 +92,17 @@ export default function Vehicles() {
       cell: ({ row }) => (
         <button
           onClick={() => {
-            if (window.confirm(`Are you sure you want to delete vehicle ${row.original.vehicleNumber}?`)) {
+            if (window.confirm(`Delete vehicle ${row.original.vehicleNumber}?`)) {
               deleteVehicle(row.original.id)
                 .then(() => toast.success("Vehicle deleted"))
                 .catch(() => toast.error("Failed to delete vehicle"));
             }
           }}
-          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1.5 rounded-lg transition-all"
+          className="p-1.5 text-gray-700 hover:text-red-400 hover:bg-red-500/8 rounded
+                     transition-colors duration-150"
           title="Delete Vehicle"
         >
-          <MdDelete className="text-lg" />
+          <MdDelete className="text-base" />
         </button>
       ),
     },
@@ -113,64 +115,72 @@ export default function Vehicles() {
   return (
     <MainLayout>
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-slate-100">Vehicles</h1>
-          <p className="text-xs text-slate-500 mt-0.5">{vehicles.length} registered vehicles</p>
+        <div className="page-header mb-0">
+          <h1>Vehicles</h1>
+          <p>{vehicles.length} registered vehicles</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" size="sm" onClick={fetchVehicles}><MdRefresh /> Refresh</Button>
-          <Button size="sm" onClick={() => setOpen(true)}><MdAdd /> Add Vehicle</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={fetchVehicles}>
+            <MdRefresh className="text-sm" /> Refresh
+          </Button>
+          <Button size="sm" onClick={() => setOpen(true)}>
+            <MdAdd className="text-sm" /> Add Vehicle
+          </Button>
         </div>
       </div>
 
-      {/* Fleet stats */}
+      {/* Fleet stats — flat, 3 columns */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         {loading ? (
           <><SkeletonCard /><SkeletonCard /><SkeletonCard /></>
         ) : (
-          [
-            { label: "Available",   value: available,   color: "text-cyan-400",  bg: "bg-cyan-500/15" },
-            { label: "In Use",      value: inUse,       color: "text-amber-400", bg: "bg-amber-500/15" },
-            { label: "Maintenance", value: maintenance, color: "text-rose-400",  bg: "bg-rose-500/15" },
-          ].map(({ label, value, color, bg }) => (
-            <div key={label} className="glass-card p-4 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center`}>
-                <MdDirectionsCar className={`${color} text-lg`} />
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-500 uppercase tracking-wide">{label}</p>
-                <p className={`text-2xl font-bold ${color}`}>{value}</p>
-              </div>
+          <>
+            <div className="card p-4 border-l-2 border-l-emerald-500">
+              <p className="text-xs text-gray-500 mb-1">Available</p>
+              <p className="text-2xl font-semibold text-gray-100">{available}</p>
             </div>
-          ))
+            <div className="card p-4 border-l-2 border-l-amber-500">
+              <p className="text-xs text-gray-500 mb-1">In Use</p>
+              <p className="text-2xl font-semibold text-gray-100">{inUse}</p>
+            </div>
+            <div className="card p-4 border-l-2 border-l-red-500">
+              <p className="text-xs text-gray-500 mb-1">Maintenance</p>
+              <p className="text-2xl font-semibold text-gray-100">{maintenance}</p>
+            </div>
+          </>
         )}
       </div>
 
       {/* Table */}
-      <div className="glass-card overflow-hidden">
-        <DataTable columns={columns} data={vehicles} loading={loading} emptyMessage="No vehicles registered yet." />
+      <div className="card overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={vehicles}
+          loading={loading}
+          emptyMessage="No vehicles registered yet."
+        />
       </div>
 
-      {/* Modal */}
-      <Modal isOpen={open} onClose={() => setOpen(false)} title="Add New Vehicle" size="lg" disableClose={isSubmitting}>
+      {/* Add Vehicle Modal */}
+      <Modal isOpen={open} onClose={() => setOpen(false)} title="Add Vehicle" size="lg" disableClose={isSubmitting}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <Input label="Vehicle Number *" placeholder="MH-12-AB-1234" error={errors.vehicleNumber?.message} {...register("vehicleNumber")} />
             <div>
               <label className="form-label">Vehicle Type *</label>
-              <select className={`form-input ${errors.vehicleType ? "border-red-500/60" : ""}`} {...register("vehicleType")}>
+              <select className={`form-input ${errors.vehicleType ? "border-red-500/50" : ""}`} {...register("vehicleType")}>
                 {VEHICLE_TYPES.map((t) => <option key={t}>{t}</option>)}
               </select>
-              {errors.vehicleType && <p className="mt-1 text-xs text-red-400">{errors.vehicleType.message}</p>}
+              {errors.vehicleType && <p className="mt-1 text-[11px] text-red-400">{errors.vehicleType.message}</p>}
             </div>
-            <Input label="Capacity"         placeholder="5 Ton"         error={errors.capacity?.message}      {...register("capacity")} />
+            <Input label="Capacity" placeholder="5 Ton" error={errors.capacity?.message} {...register("capacity")} />
             <div>
               <label className="form-label">Status</label>
               <select className="form-input" {...register("status")}>
                 {VEHICLE_STATUSES.map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
-            <Input label="Current Location" placeholder="Mumbai Depot"  error={errors.currentLocation?.message} {...register("currentLocation")} />
+            <Input label="Current Location" placeholder="Mumbai Depot" error={errors.currentLocation?.message} {...register("currentLocation")} />
             <div>
               <label className="form-label">Assign Driver</label>
               <select className="form-input" {...register("driverAssigned")}>
@@ -179,7 +189,7 @@ export default function Vehicles() {
               </select>
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" size="sm" type="button" onClick={() => setOpen(false)}>Cancel</Button>
             <Button size="sm" type="submit" loading={isSubmitting}>Add Vehicle</Button>
           </div>

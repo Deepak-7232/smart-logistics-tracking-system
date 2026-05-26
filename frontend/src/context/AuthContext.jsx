@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const store = useAuthStore();
   const warningShownRef = useRef(false);
 
-  // On mount: evict expired tokens so protected routes redirect correctly
   useEffect(() => {
     store.restoreSession();
 
@@ -21,7 +20,6 @@ export function AuthProvider({ children }) {
 
       const timeLeft = payload.exp * 1000 - Date.now();
 
-      // Auto-logout if token is expired
       if (timeLeft <= 0) {
         useAuthStore.getState().logout();
         toast.info("Your session has expired. Please sign in again.");
@@ -29,7 +27,6 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      // Warn if less than 5 minutes remain
       if (timeLeft <= 5 * 60 * 1000 && !warningShownRef.current) {
         toast.warn("⏱ Your session expires in less than 5 minutes. Please save your work.", {
           autoClose: 10000,
@@ -39,8 +36,7 @@ export function AuthProvider({ children }) {
     }, 30000); // check every 30 seconds
 
     return () => clearInterval(interval);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
+  }, []);
   return (
     <AuthContext.Provider value={store}>
       {children}
@@ -48,7 +44,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-/** Hook — consume auth from any component */
 export function useAuth() {
   return useContext(AuthContext);
 }

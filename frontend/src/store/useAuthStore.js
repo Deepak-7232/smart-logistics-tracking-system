@@ -18,7 +18,6 @@ const useAuthStore = create(
       user:   null,   // { email, role, name?, id?, phone?, licenseNumber?, vehicleAssigned?, available? }
       isAuth: false,
 
-      /** Accepts { token, email, role } from backend AuthResponse */
       login: (data) => {
         let token, email, role;
         if (typeof data === "string") {
@@ -34,7 +33,6 @@ const useAuthStore = create(
         set({ token, user: { email, role }, isAuth: true });
       },
 
-      /** Called after fetching /drivers/me — stores full driver profile */
       setProfile: (profile) => {
         set((s) => ({
           user: { ...s.user, ...profile },

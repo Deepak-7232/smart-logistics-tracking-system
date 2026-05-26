@@ -25,13 +25,12 @@ export default function Login() {
       const data = await authService.login(email, password);
       login(data);
 
-      // Fetch full profile for DRIVER so we have id, name, vehicleAssigned etc.
       if (data.role === ROLES.DRIVER) {
         try {
           const profile = await authService.getMyProfile(data.email);
           setProfile(profile);
         } catch {
-          // Non-critical — profile can be re-fetched on /my-vehicle page
+          // Non-critical
         }
       }
 
@@ -47,30 +46,26 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background glows */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
+      <div className="w-full max-w-sm animate-fade-in">
 
-      <div className="w-full max-w-md z-10 animate-fade-in">
         {/* Brand */}
-        <div className="text-center mb-10">
-          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-violet-600
-                          items-center justify-center shadow-xl shadow-primary-900/40 mb-4">
-            <MdLocalShipping className="text-3xl text-white" />
+        <div className="text-center mb-8">
+          <div className="inline-flex w-10 h-10 rounded-lg bg-primary-500 items-center justify-center mb-4">
+            <MdLocalShipping className="text-white text-lg" />
           </div>
-          <h1 className="text-2xl font-bold text-white">LogiTrack</h1>
-          <p className="text-sm text-slate-400 mt-1">Smart Logistics Management</p>
+          <h1 className="text-xl font-semibold text-gray-100">LogiTrack</h1>
+          <p className="text-xs text-gray-600 mt-1">Smart Logistics Management</p>
         </div>
 
         {/* Card */}
-        <div className="glass-card p-8 bg-slate-900/80 border border-slate-700/60">
-          <h2 className="text-lg font-semibold text-slate-100 mb-1">Sign in to your account</h2>
-          <p className="text-sm text-slate-500 mb-7">Enter your credentials to continue</p>
+        <div className="card p-6 shadow-lg">
+          <div className="mb-5">
+            <h2 className="text-sm font-semibold text-gray-100">Sign in to your account</h2>
+            <p className="text-xs text-gray-600 mt-0.5">Enter your credentials to continue</p>
+          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <Input
               id="email" type="email" label="Email Address"
               placeholder="admin@logistics.com" icon={MdEmail}
@@ -81,30 +76,36 @@ export default function Login() {
               placeholder="••••••••" icon={MdLock}
               error={errors.password?.message} {...register("password")}
             />
-            <Button type="submit" loading={isSubmitting} fullWidth size="lg" className="mt-2">
-              Sign In <MdArrowForward />
+            <Button type="submit" loading={isSubmitting} fullWidth className="mt-1">
+              Sign In <MdArrowForward className="text-sm" />
             </Button>
           </form>
 
           {/* Register link */}
-          <p className="text-center text-sm text-slate-500 mt-5">
+          <p className="text-center text-xs text-gray-600 mt-5">
             New driver?{" "}
-            <Link to="/register" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
+            <Link to="/register" className="text-primary-400 hover:text-primary-300 transition-colors">
               Create an account
             </Link>
           </p>
 
           {/* Test accounts */}
-          <div className="mt-5 p-3 rounded-xl bg-slate-800/60 border border-slate-700/40">
-            <p className="text-[11px] text-slate-500 font-medium mb-2 uppercase tracking-wider">Test Accounts</p>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">deepak@gmail.com / 123456</span>
-                <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">ADMIN</span>
+          <div className="mt-5 pt-4 border-t border-app-border">
+            <p className="text-[10px] text-gray-700 font-medium mb-2 uppercase tracking-wider">
+              Test Accounts
+            </p>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-gray-500 font-mono">deepak@gmail.com / 123456</span>
+                <span className="text-[10px] font-medium text-primary-400 bg-primary-500/10 px-1.5 py-0.5 rounded">
+                  ADMIN
+                </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">user@gmail.com / 123456</span>
-                <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">DRIVER</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-gray-500 font-mono">user@gmail.com / 123456</span>
+                <span className="text-[10px] font-medium text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+                  DRIVER
+                </span>
               </div>
             </div>
           </div>

@@ -5,79 +5,79 @@ import { useTheme } from "../context/ThemeContext";
 import NotificationCenter from "../components/NotificationCenter";
 import { ROLES } from "../constants/roles";
 
-const PAGE_TITLES = {
-  "/dashboard": { title: "Dashboard",      sub: "Welcome back! Here's what's happening." },
-  "/shipments": { title: "Shipments",      sub: "Manage and track all shipments." },
-  "/drivers":   { title: "Drivers",        sub: "Manage your driver fleet." },
-  "/vehicles":  { title: "Vehicles",       sub: "Monitor all registered vehicles." },
-  "/track":     { title: "Track Shipment", sub: "Real-time shipment tracking." },
+const PAGE_META = {
+  "/dashboard":    { title: "Dashboard" },
+  "/shipments":    { title: "Shipments" },
+  "/drivers":      { title: "Drivers" },
+  "/vehicles":     { title: "Vehicles" },
+  "/track":        { title: "Track Shipment" },
+  "/my-shipments": { title: "My Shipments" },
+  "/my-vehicle":   { title: "My Vehicle" },
+  "/profile":      { title: "My Profile" },
 };
 
 export default function Navbar() {
   const { pathname }       = useLocation();
   const { user }           = useAuth();
   const { isDark, toggle } = useTheme();
-  const { title, sub }     = PAGE_TITLES[pathname] ?? { title: "LogiTrack", sub: "" };
 
+  const meta     = PAGE_META[pathname] ?? { title: "LogiTrack" };
   const isAdmin  = user?.role === ROLES.ADMIN;
-  const isDriver = user?.role === ROLES.DRIVER;
+  const initials = user?.email?.[0]?.toUpperCase() ?? "U";
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80
-                       bg-slate-950/80 dark:bg-slate-950/80 backdrop-blur-sm sticky top-0 z-30">
+    <header
+      className="flex items-center justify-between px-5 sticky top-0 z-30"
+      style={{ height: '52px', backgroundColor: 'var(--color-bg)', borderBottom: '1px solid var(--color-border)', transition: 'background-color 200ms, border-color 200ms' }}
+    >
       {/* Left — page title */}
-      <div>
-        <h1 className="text-base font-bold text-slate-100 leading-tight">{title}</h1>
-        <p className="text-xs text-slate-500">{sub}</p>
-      </div>
+      <h1 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{meta.title}</h1>
 
       {/* Right */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {/* Search */}
-        <div className="hidden md:flex items-center gap-2 bg-slate-800/60 border border-slate-700/50
-                        rounded-xl px-3 py-1.5 text-slate-400 text-sm w-48 focus-within:w-64 transition-all duration-300">
-          <MdSearch className="text-lg flex-shrink-0" />
+        <div
+          className="hidden md:flex items-center gap-2 rounded-lg px-2.5 py-1.5 w-44 focus-within:w-60 transition-all duration-200"
+          style={{ backgroundColor: 'var(--color-elevated)', border: '1px solid var(--color-border)' }}
+        >
+          <MdSearch className="text-sm flex-shrink-0" style={{ color: 'var(--color-text-faint)' }} />
           <input
             type="text"
-            placeholder="Quick search…"
-            className="bg-transparent outline-none placeholder-slate-500 text-slate-300 text-sm w-full"
+            placeholder="Search…"
+            className="bg-transparent outline-none text-xs w-full"
+            style={{ color: 'var(--color-text-primary)' }}
           />
         </div>
 
         {/* Theme toggle */}
         <button
           onClick={toggle}
-          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/60 border border-slate-700/50
-                     text-slate-400 hover:text-slate-100 hover:bg-slate-700/60 transition-all duration-200"
+          title={isDark ? "Light mode" : "Dark mode"}
+          className="w-8 h-8 flex items-center justify-center rounded-md text-gray-600
+                     hover:text-gray-300 hover:bg-app-elevated transition-colors duration-150"
         >
-          {isDark ? <MdWbSunny className="text-amber-400 text-xl" /> : <MdNightlight className="text-primary-400 text-xl" />}
+          {isDark
+            ? <MdWbSunny className="text-base text-amber-500" />
+            : <MdNightlight className="text-base text-primary-400" />
+          }
         </button>
 
-        {/* Notification center */}
+        {/* Notifications */}
         <NotificationCenter />
 
-        {/* Avatar + role badge */}
-        <div className="flex items-center gap-2 ml-1">
-          {user?.role && (
-            <span className={`text-[10px] font-bold tracking-wider px-2 py-1 rounded border
-              ${isAdmin
-                ? "text-indigo-400 bg-indigo-500/10 border-indigo-500/20"
-                : "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
-              }`}
-            >
-              {user.role}
-            </span>
-          )}
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-lg cursor-pointer
-            ${isAdmin
-              ? "bg-gradient-to-br from-primary-500 to-violet-600"
-              : "bg-gradient-to-br from-cyan-500 to-sky-600"
-            }`}
-          >
-            <span className="text-xs font-bold text-white">
-              {user?.email?.[0]?.toUpperCase() ?? "U"}
-            </span>
+        {/* Divider */}
+        <div className="w-px h-5 bg-app-border mx-1" />
+
+        {/* Avatar */}
+        <div className="flex items-center gap-2 cursor-pointer group">
+          <div className="w-7 h-7 rounded-full bg-primary-500/20 flex items-center justify-center">
+            <span className="text-xs font-semibold text-primary-400">{initials}</span>
+          </div>
+          <div className="hidden lg:block">
+            <p className="text-xs font-medium text-gray-300 leading-tight">{user?.email}</p>
+            <p className={`text-[10px] leading-tight ${isAdmin ? "text-primary-400" : "text-cyan-400"}`}>
+              {user?.role}
+            </p>
           </div>
         </div>
       </div>

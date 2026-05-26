@@ -16,8 +16,8 @@ import useVehicleStore from "../store/useVehicleStore";
 import { driverSchema } from "../schemas/driverSchema";
 
 export default function Drivers() {
-  const { drivers, loading, fetchDrivers, addDriver, deleteDriver }  = useDriverStore();
-  const { vehicles, fetchVehicles }                    = useVehicleStore();
+  const { drivers, loading, fetchDrivers, addDriver, deleteDriver } = useDriverStore();
+  const { vehicles, fetchVehicles }                                  = useVehicleStore();
   const [open, setOpen] = useState(false);
 
   useEffect(() => { fetchDrivers(); fetchVehicles(); }, []);
@@ -40,19 +40,19 @@ export default function Drivers() {
     }
   };
 
-  /* ---- TanStack columns ---- */
+  /* ── Columns ── */
   const columns = useMemo(() => [
     {
       id: "driver",
       header: "Driver",
       accessorKey: "name",
       cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-violet-500/20 text-violet-400
-                          flex items-center justify-center text-sm font-bold flex-shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-app-elevated border border-app-border
+                          flex items-center justify-center text-xs font-semibold text-gray-400 flex-shrink-0">
             {row.original.name?.[0]?.toUpperCase() ?? "D"}
           </div>
-          <span className="font-medium text-slate-200">{row.original.name}</span>
+          <span className="text-sm text-gray-200 font-medium">{row.original.name}</span>
         </div>
       ),
     },
@@ -60,8 +60,8 @@ export default function Drivers() {
       accessorKey: "phone",
       header: "Phone",
       cell: ({ getValue }) => (
-        <span className="flex items-center gap-1.5 text-slate-300">
-          <MdPhone className="text-slate-500" /> {getValue()}
+        <span className="flex items-center gap-1.5 text-xs text-gray-400">
+          <MdPhone className="text-gray-700 flex-shrink-0" /> {getValue()}
         </span>
       ),
     },
@@ -69,7 +69,7 @@ export default function Drivers() {
       accessorKey: "licenseNumber",
       header: "License No.",
       cell: ({ getValue }) => (
-        <span className="font-mono text-xs bg-slate-800 text-amber-400 px-2 py-0.5 rounded">
+        <span className="font-mono text-[11px] bg-app-elevated text-amber-400 px-2 py-0.5 rounded border border-app-border">
           {getValue() || "—"}
         </span>
       ),
@@ -77,16 +77,20 @@ export default function Drivers() {
     {
       accessorKey: "available",
       header: "Status",
-      cell: ({ getValue }) => getValue() 
-        ? <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 w-fit"><MdCheckCircle /> Available</span>
-        : <span className="flex items-center gap-1 text-red-400 text-xs font-bold bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20 w-fit"><MdCancel /> Unavailable</span>,
+      cell: ({ getValue }) => getValue()
+        ? <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-400/8 border border-emerald-400/20 px-2 py-0.5 rounded">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Available
+          </span>
+        : <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-red-400 bg-red-400/8 border border-red-400/20 px-2 py-0.5 rounded">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400" /> Unavailable
+          </span>,
     },
     {
       accessorKey: "vehicleAssigned",
-      header: "Vehicle Assigned",
+      header: "Vehicle",
       cell: ({ getValue }) => getValue()
-        ? <span className="text-cyan-400">{getValue()}</span>
-        : <span className="text-slate-600 italic text-xs">Not assigned</span>,
+        ? <span className="text-xs text-gray-300 font-mono">{getValue()}</span>
+        : <span className="text-gray-700 text-xs italic">Not assigned</span>,
     },
     {
       id: "actions",
@@ -95,76 +99,77 @@ export default function Drivers() {
       cell: ({ row }) => (
         <button
           onClick={() => {
-            if (window.confirm(`Are you sure you want to delete driver ${row.original.name}?`)) {
+            if (window.confirm(`Delete driver ${row.original.name}?`)) {
               deleteDriver(row.original.id)
                 .then(() => toast.success("Driver deleted"))
                 .catch(() => toast.error("Failed to delete driver"));
             }
           }}
-          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1.5 rounded-lg transition-all"
+          className="p-1.5 text-gray-700 hover:text-red-400 hover:bg-red-500/8 rounded
+                     transition-colors duration-150"
           title="Delete Driver"
         >
-          <MdDelete className="text-lg" />
+          <MdDelete className="text-base" />
         </button>
       ),
     },
   ], []);
 
-  const assigned = drivers.filter((d) => d.vehicleAssigned).length;
+  const assigned   = drivers.filter((d) => d.vehicleAssigned).length;
+  const available  = drivers.filter((d) => d.available).length;
 
   return (
     <MainLayout>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-slate-100">Drivers</h1>
-          <p className="text-xs text-slate-500 mt-0.5">{drivers.length} registered drivers</p>
+        <div className="page-header mb-0">
+          <h1>Drivers</h1>
+          <p>{drivers.length} registered drivers</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" size="sm" onClick={fetchDrivers}><MdRefresh /> Refresh</Button>
-          <Button size="sm" onClick={() => setOpen(true)}><MdAdd /> Add Driver</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={fetchDrivers}>
+            <MdRefresh className="text-sm" /> Refresh
+          </Button>
+          <Button size="sm" onClick={() => setOpen(true)}>
+            <MdAdd className="text-sm" /> Add Driver
+          </Button>
         </div>
       </div>
 
-      {/* Quick stats */}
+      {/* Quick stats — flat cards, no colored numbers */}
       <div className="grid grid-cols-2 gap-3 mb-5">
         {loading ? (
           <><SkeletonCard /><SkeletonCard /></>
         ) : (
           <>
-            <div className="glass-card p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
-                <MdPeople className="text-violet-400 text-xl" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Total Drivers</p>
-                <p className="text-2xl font-bold text-violet-400">{drivers.length}</p>
-              </div>
+            <div className="card p-4 border-l-2 border-l-primary-500">
+              <p className="text-xs text-gray-500 mb-1">Total Drivers</p>
+              <p className="text-2xl font-semibold text-gray-100">{drivers.length}</p>
             </div>
-            <div className="glass-card p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
-                <MdPeople className="text-cyan-400 text-xl" />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Assigned to Vehicle</p>
-                <p className="text-2xl font-bold text-cyan-400">{assigned}</p>
-              </div>
+            <div className="card p-4 border-l-2 border-l-emerald-500">
+              <p className="text-xs text-gray-500 mb-1">Available</p>
+              <p className="text-2xl font-semibold text-gray-100">{available}</p>
             </div>
           </>
         )}
       </div>
 
       {/* Table */}
-      <div className="glass-card overflow-hidden">
-        <DataTable columns={columns} data={drivers} loading={loading} emptyMessage="No drivers registered yet." />
+      <div className="card overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={drivers}
+          loading={loading}
+          emptyMessage="No drivers registered yet."
+        />
       </div>
 
-      {/* Modal */}
-      <Modal isOpen={open} onClose={() => setOpen(false)} title="Add New Driver" disableClose={isSubmitting}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          <Input label="Full Name *"     placeholder="e.g. Rajesh Kumar"   error={errors.name?.message}          {...register("name")} />
-          <Input label="Phone Number *"  placeholder="+91 99999 00000"     error={errors.phone?.message}         {...register("phone")} />
-          <Input label="License Number"  placeholder="DL-0120110012345"    error={errors.licenseNumber?.message} {...register("licenseNumber")} />
+      {/* Add Driver Modal */}
+      <Modal isOpen={open} onClose={() => setOpen(false)} title="Add Driver" disableClose={isSubmitting}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5" noValidate>
+          <Input label="Full Name *"     placeholder="Rajesh Kumar"       error={errors.name?.message}          {...register("name")} />
+          <Input label="Phone Number *"  placeholder="+91 99999 00000"    error={errors.phone?.message}         {...register("phone")} />
+          <Input label="License Number"  placeholder="DL-0120110012345"   error={errors.licenseNumber?.message} {...register("licenseNumber")} />
           <div>
             <label className="form-label">Assign Vehicle</label>
             <select className="form-input" {...register("vehicleAssigned")}>
@@ -172,7 +177,7 @@ export default function Drivers() {
               {vehicles.map((v) => <option key={v.id} value={v.vehicleNumber}>{v.vehicleNumber} · {v.vehicleType}</option>)}
             </select>
           </div>
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" size="sm" type="button" onClick={() => setOpen(false)}>Cancel</Button>
             <Button size="sm" type="submit" loading={isSubmitting}>Add Driver</Button>
           </div>
