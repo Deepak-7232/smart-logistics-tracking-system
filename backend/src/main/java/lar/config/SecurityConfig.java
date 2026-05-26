@@ -16,26 +16,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
- * Security configuration — full RBAC with ADMIN and DRIVER roles.
- *
- * Role matrix:
- * ┌──────────────────────────────────────────┬───────┬────────┐
- * │ Endpoint │ ADMIN │ DRIVER │
- * ├──────────────────────────────────────────┼───────┼────────┤
- * │ POST /auth/** │ ✓ │ ✓ │ (public)
- * │ GET /shipments/my-shipments/** │ ✓ │ ✓ │
- * │ PUT /shipments/update-status/** │ ✓ │ ✓ │
- * │ GET /drivers/me/** │ ✓ │ ✓ │
- * │ PUT /drivers/availability/** │ ✓ │ ✓ │
- * │ GET /shipments/all │ ✓ │ ✗ │
- * │ POST /shipments/** │ ✓ │ ✗ │
- * │ PUT /shipments/assign-** │ ✓ │ ✗ │
- * │ GET /drivers/all │ ✓ │ ✗ │
- * │ DELETE /drivers/** │ ✓ │ ✗ │
- * │ /vehicles/** │ ✓ │ ✗ │
- * └──────────────────────────────────────────┴───────┴────────┘
- */
+
 @Configuration
 public class SecurityConfig {
 

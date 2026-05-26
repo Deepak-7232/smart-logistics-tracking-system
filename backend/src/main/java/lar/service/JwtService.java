@@ -53,7 +53,6 @@ public class JwtService {
 
     // ── Token validation ──────────────────────────────────────────────────────
 
-    /** Returns true if the token has a valid signature and is not expired. */
     public boolean isTokenValid(String token) {
         try {
             return !extractExpiration(token).before(new Date());
@@ -69,12 +68,10 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    /** Extract the custom 'role' claim (e.g. "ADMIN" or "USER"). */
     public String extractRole(String token) {
         return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
-    /** Extract the expiration date. */
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -84,10 +81,7 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    /**
-     * Parse and verify the JWT.
-     * JJWT 0.12.x: Jwts.parser() replaces the removed Jwts.parserBuilder()
-     */
+    
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)            // replaces .setSigningKey(key).build()

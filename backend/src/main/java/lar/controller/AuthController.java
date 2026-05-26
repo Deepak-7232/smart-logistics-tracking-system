@@ -12,13 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Authentication Controller — Handles login for Admins and Drivers separately.
- *
- * POST /auth/register → creates a new DRIVER account
- * POST /auth/login → returns { token, role, email } on success
- * returns 401 on bad credentials
- */
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -32,10 +26,7 @@ public class AuthController {
     @Autowired
     private JwtService jwtService;
 
-    /**
-     * Register a new driver account.
-     * Role is always forced to "DRIVER" on self-registration.
-     */
+    
     @PostMapping("/register")
     public ResponseEntity<Driver> register(@RequestBody Driver driver) {
         driver.setRole("DRIVER");
@@ -44,10 +35,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    /**
-     * Login endpoint.
-     * Looks up the user by email in the admins table first, then drivers table.
-     */
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
 

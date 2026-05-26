@@ -1,10 +1,6 @@
 package lar.dto;
 
-/**
- * Returned by POST /auth/login and POST /auth/register (on success).
- * Contains the JWT token and enough metadata for the frontend to
- * set up role-based routing without decoding the token itself.
- */
+
 public class AuthResponse {
 
     private String token;

@@ -8,16 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Driver Controller
- *
- * ADMIN:  GET  /drivers/all           → list all drivers
- *         PUT  /drivers/availability/{id}?available=
- *         DELETE /drivers/{id}
- *
- * DRIVER: GET  /drivers/me/{email}    → own profile (availability toggle data)
- *         PUT  /drivers/availability/{id}?available= (own record only — SecurityConfig allows DRIVER)
- */
+
 @RestController
 @RequestMapping("/drivers")
 public class DriverController {
@@ -60,22 +51,19 @@ public class DriverController {
     @GetMapping("/me/{email}")
     public ResponseEntity<Driver> getMyProfile(@PathVariable String email) {
         Driver driver = driverRepository.findByEmail(email);
-        if (driver == null) return ResponseEntity.notFound().build();
+        if (driver == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(driver);
     }
 
-    /**
-     * Toggle availability. Called by ADMIN when assigning work,
-     * and by DRIVER themselves to mark available/unavailable.
-     */
+    
     @PutMapping("/availability/{id}")
     public ResponseEntity<Driver> updateAvailability(
             @PathVariable Long id,
             @RequestParam Boolean available) {
 
         Driver driver = driverRepository.findById(id).orElseThrow(
-                () -> new RuntimeException("Driver not found: " + id)
-        );
+                () -> new RuntimeException("Driver not found: " + id));
         driver.setAvailable(available);
         return ResponseEntity.ok(driverRepository.save(driver));
     }

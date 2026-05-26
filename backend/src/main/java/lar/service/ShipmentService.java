@@ -59,14 +59,7 @@ public class ShipmentService {
         return shipmentRepository.save(shipment);
     }
 
-    /**
-     * Assign (or unassign) a driver to a shipment.
-     *
-     * Key rules:
-     *  - driverId == null → unassign: free the current driver and set driver to null.
-     *  - Re-assigning the SAME driver that is already on this shipment is a no-op (allowed).
-     *  - Assigning a NEW driver requires that driver to be available.
-     */
+    
     public Shipment assignDriver(String trackingId, Long driverId) {
         Shipment shipment = shipmentRepository.findByTrackingId(trackingId);
         if (shipment == null)
@@ -139,7 +132,6 @@ public class ShipmentService {
         return shipmentRepository.save(shipment);
     }
 
-    /** Returns all shipments assigned to a given driver (by email). */
     public List<Shipment> getShipmentsByDriverEmail(String email) {
         Driver driver = driverRepository.findByEmail(email);
         if (driver == null) throw new RuntimeException("Driver not found: " + email);

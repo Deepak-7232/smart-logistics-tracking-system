@@ -10,10 +10,7 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /**
-     * Replaces the old String driverAssigned field.
-     * Now a proper FK relationship: shipments.driver_id → drivers.id
-     */
+    
     @ManyToOne
     @JoinColumn(name = "driver_id")
     private Driver driver;
